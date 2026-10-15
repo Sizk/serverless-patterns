@@ -58,6 +58,32 @@ Resources:
         SigningProtocol: sigv4
         SigningBehavior: always-amz-auth
 
+  # Cache key = path + query string + the viewer's Authorization header. The
+  # managed CachingOptimized policy leaves query strings and Authorization out
+  # of the key, and CloudFront forwards Authorization to the origin only when
+  # the cache policy includes it. This policy keeps CachingOptimized's TTLs and
+  # compression and adds both, so each signed-in viewer gets their own entries.
+  CachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Ref AWS::StackName
+        Comment: Path, query string and Authorization header in the cache key
+        MinTTL: 1
+        DefaultTTL: 86400
+        MaxTTL: 31536000
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - Authorization
+          CookiesConfig:
+            CookieBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: all
+
   # CloudFront is a global service; the distribution is created from this
   # stack's Region like any other resource. Origin = the endpoint domain.
   Distribution:
@@ -82,8 +108,7 @@ Resources:
           AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
           CachedMethods: [GET, HEAD]
           Compress: true
-          # Managed CachingOptimized: cache by path, honour origin Cache-Control.
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          CachePolicyId: !Ref CachePolicy
           # Managed AllViewerExceptHostHeader: forward viewer headers and query
           # string, but keep the origin's Host header. Lambda routes on Host.
           OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
