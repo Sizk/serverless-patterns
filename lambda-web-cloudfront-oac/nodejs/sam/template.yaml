@@ -39,7 +39,7 @@ Resources:
       # SigV4-signed, before the application code runs. The endpoint is never
       # public. (ApplicationManaged would make it open to anyone with the URL.)
       AuthType: IamAuth
-      EndpointName: prod
+      EndpointName: dev
       EndpointType: HomeRegion
       AutoDeploymentMode: LatestRevision
       LoggingConfig:
@@ -91,7 +91,7 @@ Resources:
   # The SigV4 signature proves the caller is CloudFront; this policy decides
   # which distribution. Another distribution, even with the same OAC and
   # origin, gets 403. The policy is attached to the function and scoped to
-  # the `prod` endpoint. ResourceArn is the web-function ARN (the template
+  # the `dev` endpoint. ResourceArn is the web-function ARN (the template
   # reference documents it as FunctionResourceArn, which does not exist).
   EndpointResourcePolicy:
     Type: AWS::Lambda::ResourcePolicy
